@@ -12,13 +12,17 @@ pipeline {
 
         stage('1. Checkout Code') {
             steps {
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
         stage('2. Application Build & Test') {
             steps {
+                echo 'Checking Python installation...'
                 bat 'python --version'
+
+                echo 'Testing Python application...'
                 bat 'python -m py_compile app.py'
             }
         }
@@ -35,8 +39,10 @@ pipeline {
 
         stage('4. Push Image to Registry') {
             steps {
-                echo 'Pushing Docker image...'
+                echo 'Pushing Docker image to registry...'
+
                 bat '"%DOCKER%" push %REGISTRY%/%IMAGE_NAME%:%BUILD_NUMBER%'
+
                 bat '"%DOCKER%" push %REGISTRY%/%IMAGE_NAME%:latest'
             }
         }
@@ -44,11 +50,12 @@ pipeline {
 
     post {
         success {
-            echo 'SUCCESS! Docker image built and pushed!'
+            echo 'SUCCESS! Jenkins pipeline completed successfully!'
+            echo "Docker image: ${REGISTRY}/${IMAGE_NAME}:${BUILD_NUMBER}"
         }
 
         failure {
-            echo 'Pipeline failed. Check Console Output.'
+            echo 'ERROR! Jenkins pipeline failed. Check Console Output.'
         }
 
         always {
